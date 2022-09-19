@@ -1,0 +1,262 @@
+$editor-header-sizes: (
+  "h1": 2em,
+  "h2": 1.5em,
+  "h3": 1.17em,
+  "h4": 1em,
+  "h5": 0.83em,
+  "h6": 0.75em,
+);
+
+h1 {
+  font-size: map-get($map: $editor-header-sizes, $key: "h1") !important;
+  font-weight: 700 !important;
+}
+h2 {
+  font-size: map-get($map: $editor-header-sizes, $key: "h2") !important;
+  font-weight: 700 !important;
+}
+h3 {
+  font-size: map-get($map: $editor-header-sizes, $key: "h3") !important;
+  font-weight: 500 !important;
+}
+h4 {
+  font-size: map-get($map: $editor-header-sizes, $key: "h4") !important;
+  font-weight: 500 !important;
+}
+h5 {
+  font-size: map-get($map: $editor-header-sizes, $key: "h5") !important;
+  font-weight: 500 !important;
+}
+h6 {
+  font-size: map-get($map: $editor-header-sizes, $key: "h6") !important;
+  font-weight: 500 !important;
+}
+
+:global {
+  // .ct {
+  //   &--bottom {
+  //     .ct__content {
+  //       max-width: 160px;
+  //     }
+  //   }
+  // }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  #editorjs {
+    .ce-toolbar__settings-btn {
+      cursor: grab;
+    }
+
+    .ce-toolbox {
+      .ce-popover {
+        &__items {
+          .ce-popover__item[data-item-name="code"] {
+            position: relative;
+            .ce-popover__item-label {
+              visibility: hidden;
+              &::before {
+                content: "Code Block";
+                visibility: visible;
+                display: block;
+                position: absolute;
+                padding: 5px;
+                padding-left: 0px;
+                top: 1px;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .ce-settings {
+      .nice-select {
+        margin-bottom: 5px;
+        width: 100%;
+      }
+      .nice-select-dropdown {
+        width: 150px;
+      }
+    }
+
+    .simple-image {
+      .cdx-loader {
+        min-height: 200px;
+      }
+
+      &__picture {
+        img {
+          border-radius: 6px;
+          max-width: 70%;
+        }
+      }
+
+      &__caption[contentEditable="true"][data-placeholder] {
+        border: unset;
+        font-style: italic;
+        color: var(--chakra-colors-blackAlpha-600);
+        &::before {
+          position: absolute;
+          content: attr(data-placeholder);
+          color: var(--chakra-colors-blackAlpha-400);
+          font-weight: normal;
+          opacity: 0;
+        }
+        &:empty {
+          &::before {
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    .cdx-marker {
+      background-color: var(--chakra-colors-yellow-100);
+      border-radius: 3px;
+    }
+
+    .cdx-list {
+      padding-left: 30px;
+      &__item {
+        padding: 3px 0 3px 0px;
+      }
+    }
+
+    .ce-block {
+      .ce-paragraph {
+        &:focus-visible {
+          &::before {
+            opacity: 1 !important;
+            color: var(--chakra-colors-blackAlpha-500) !important;
+            transition: opacity 0.14s ease-in-out;
+          }
+        }
+      }
+
+      .inline-code {
+        font-family: monospace;
+        font-size: inherit;
+      }
+    }
+
+    .ce-block__content,
+    .ce-toolbar__content {
+      max-width: calc(100% - 120px);
+    }
+
+    @media only screen and (max-width: 768px) {
+      .ce-block__content,
+      .ce-toolbar__content {
+        max-width: calc(100% - 16px);
+      }
+    }
+
+    .ce-block--drop-target {
+      .ce-block__content {
+        &::before,
+        &::after {
+          display: none;
+        }
+      }
+    }
+
+    .editorjs-codeFlask_Wrapper {
+      margin: 15px 0;
+      background-color: var(--chakra-colors-blackAlpha-50);
+      border: 1px solid var(--chakra-colors-blackAlpha-100);
+      .editorjs-codeFlask_Editor {
+        .codeflask {
+          z-index: 0;
+          padding-left: unset;
+          &::before,
+          &__lines {
+            display: none;
+          }
+
+          &__pre,
+          &__textarea {
+            width: 100%;
+            left: unset;
+          }
+        }
+      }
+      .editorjs-codeFlask_LangDisplay {
+        padding-top: 0px;
+        background-color: var(--chakra-colors-blackAlpha-100);
+        color: var(--chakra-colors-blackAlpha-500);
+      }
+    }
+
+    .tool-videonote {
+      &.tool-videonote-wrapper {
+        margin: 22px 0;
+        position: relative;
+        --border-final-offset: 8px;
+        --animate-from-border-offset: calc(var(--border-final-offset) - 10px);
+        &::before {
+          content: "Jump To";
+          font-size: 14px;
+          position: absolute;
+          pointer-events: none;
+          top: -10px;
+          left: calc(-1 * var(--border-final-offset) / 2);
+          color: var(--chakra-colors-blackAlpha-500);
+          opacity: 0;
+          transition: all 0.2s ease-in-out;
+        }
+        &::after {
+          content: "";
+          position: absolute;
+          pointer-events: none;
+          width: calc(100% + var(--animate-from-border-offset));
+          height: calc(100% + var(--animate-from-border-offset));
+          top: calc(-1 * var(--animate-from-border-offset) / 2);
+          left: calc(-1 * var(--animate-from-border-offset) / 2);
+          border: 1px solid transparent;
+          border-radius: 4px;
+          transition: all 0.2s ease-in-out;
+        }
+
+        &:hover {
+          &::before {
+            top: -24px;
+            opacity: 1;
+            transition-delay: 0.25s;
+          }
+
+          &::after {
+            border: 1px solid var(--chakra-colors-blackAlpha-400);
+            --animate-from-border-offset: var(--border-final-offset);
+          }
+        }
+      }
+      &.tool-timestamp {
+        margin: 5px;
+        margin-left: 0px;
+        font-weight: bold;
+        opacity: 0.7;
+        cursor: pointer;
+      }
+      &.tool-content {
+        outline: none !important;
+        &::before {
+          content: attr(data-placeholder);
+          position: absolute;
+          opacity: 0;
+        }
+        &:empty {
+          &:focus-visible {
+            &::before {
+              opacity: 1;
+              color: var(--chakra-colors-blackAlpha-500) !important;
+              transition: opacity 0.14s ease-in-out;
+            }
+          }
+        }
+      }
+    }
+  }
+}
