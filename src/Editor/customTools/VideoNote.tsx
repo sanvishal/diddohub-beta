@@ -26,7 +26,7 @@ export default class VideoNote implements BlockTool {
   constructor({ data, api, readOnly }: BlockToolConstructorOptions) {
     this.api = api;
     this.videoRef = useEditorProxyStore.getState().videoRef;
-    // subscript to store, just to make sure
+    // subscripe to store, just to make sure
     this.videoRefStoreUnSubscribe = useEditorProxyStore.subscribe(({ videoRef }) => {
       this.videoRef = videoRef;
     });
@@ -95,7 +95,7 @@ export default class VideoNote implements BlockTool {
 
   save(toolsContent: HTMLElement): IVideoNoteBlockData {
     return {
-      text: toolsContent.innerHTML,
+      text: toolsContent.getElementsByClassName("tool-content")?.[0]?.innerHTML || "",
       timestamp: this.currentTimeStamp,
     };
   }
@@ -113,8 +113,9 @@ export default class VideoNote implements BlockTool {
     if (data.timestamp !== undefined && this._wrapperElement.wrapper.parentNode) {
       const newTag = this.getTag();
 
-      newTag.wrapper.innerHTML = this._wrapperElement.wrapper.innerHTML;
-      this._wrapperElement.wrapper.parentNode.replaceChild(newTag.wrapper, this._wrapperElement.wrapper);
+      newTag.editable.innerHTML = this._wrapperElement.editable.innerHTML;
+      // @ts-ignore
+      this._wrapperElement.editable.parentNode.replaceChild(newTag.editable, this._wrapperElement.editable);
       this._wrapperElement = newTag;
     }
 
@@ -129,7 +130,7 @@ export default class VideoNote implements BlockTool {
 
   static get toolbox() {
     return {
-      icon: "s",
+      icon: "v",
       title: "VideoNote",
     };
   }
