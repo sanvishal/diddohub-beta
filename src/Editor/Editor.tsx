@@ -4,6 +4,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import DragDrop from "editorjs-drag-drop";
 import "./Editor.module.scss";
 import { Box } from "@chakra-ui/react";
+import { useEditorProxyStore } from "./editorProxyStore";
 
 const DEFAULT_INITIAL_DATA = (): OutputData => {
   return {
@@ -41,6 +42,7 @@ interface IEditorProps {
 export const Editor = memo(({ onReady, onChange, autoFocus = true, initialData, tools, readOnly }: IEditorProps) => {
   const ejsInstance = useRef<EditorJS | null>();
   const [editorData, setEditorData] = useState(initialData ?? DEFAULT_INITIAL_DATA);
+  const setEditorRefToProxy = useEditorProxyStore((state) => state.setEditorRef);
 
   useEffect(() => {
     if (!ejsInstance.current) {
@@ -50,6 +52,7 @@ export const Editor = memo(({ onReady, onChange, autoFocus = true, initialData, 
       if (ejsInstance.current) {
         ejsInstance.current.destroy();
         ejsInstance.current = null;
+        setEditorRefToProxy(null);
       }
     };
   }, []);
@@ -62,6 +65,7 @@ export const Editor = memo(({ onReady, onChange, autoFocus = true, initialData, 
       readOnly,
       onReady: () => {
         ejsInstance.current = editor;
+        setEditorRefToProxy(editor);
         new DragDrop(editor, "1px dashed var(--chakra-colors-blackAlpha-400)");
         onReady?.();
       },

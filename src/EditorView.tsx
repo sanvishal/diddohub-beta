@@ -1,15 +1,25 @@
-import { Box, Center, HStack, Spinner, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Center, HStack, Spinner, Stack, Text, useDisclosure } from "@chakra-ui/react";
 import { API, OutputData } from "@editorjs/editorjs";
 import { useEffect } from "react";
-import { FiCheck } from "react-icons/fi";
+import { FiCamera, FiCheck } from "react-icons/fi";
 import { useMutation, useQuery } from "react-query";
 import { editStepById, getStepBodyById } from "./api";
-import { Editor, editorTools } from "./Editor";
+import { Editor, editorTools, useEditorProxyStore } from "./Editor";
 import { useStepsStore } from "./store";
-import { VideoContainer } from "./VideoContainer";
+import { YoutubeVideoContainer } from "./YoutubeVideoContainer";
+import { AddQuoteBlockModal } from "./AddQuoteBlockModal";
 
 export const EditorView = () => {
+  const {
+    isOpen: isAddQuoteBlockModalOpen,
+    onOpen: onAddQuoteBlockModalOpen,
+    onClose: onAddQuoteBlockModalClose,
+  } = useDisclosure();
   const selectedStep = useStepsStore((state) => state.selectedStep);
+  const [quoteBlockState, addQuoteBlock] = [
+    useEditorProxyStore((state) => state.quoteBlockState),
+    useEditorProxyStore((state) => state.addQuoteBlock),
+  ];
   const {
     data: stepBody,
     isFetching,
@@ -36,6 +46,17 @@ export const EditorView = () => {
     saveStepBody(content);
   };
 
+  useEffect(() => {
+    if (quoteBlockState.isOpen) {
+      onAddQuoteBlockModalOpen();
+    }
+  }, [quoteBlockState.isOpen]);
+
+  const handleAddQuoteModalClose = () => {
+    onAddQuoteBlockModalClose();
+    addQuoteBlock({ isOpen: false, id: "" });
+  };
+
   return selectedStep ? (
     <Stack
       w="full"
@@ -47,8 +68,17 @@ export const EditorView = () => {
       key={selectedStep.id}
       pos="relative"
     >
-      <Box w={{ base: "100%", md: "50%" }}>
-        <VideoContainer url={selectedStep.content} />
+      <Box w={{ base: "100%", md: "50%" }} pos="relative">
+        {/* <Button size="sm" mb={2} leftIcon={<FiCamera />} onClick={handleImgDialogOpen}>
+          Copy text from video
+        </Button> */}
+        <YoutubeVideoContainer url={selectedStep.content} />
+        <AddQuoteBlockModal
+          isAddQuoteBlockModalOpen={isAddQuoteBlockModalOpen}
+          onAddQuoteBlockModalClose={handleAddQuoteModalClose}
+          onAddQuoteBlockModalOpen={onAddQuoteBlockModalOpen}
+          quoteBlockState={quoteBlockState}
+        />
       </Box>
       <Box
         w={{ base: "100%", md: "calc(50% - 30px)" }}

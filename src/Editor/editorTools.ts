@@ -8,6 +8,7 @@ import InlineCode from "@editorjs/inline-code";
 import VideoNote from "./customTools/VideoNote";
 import ImageBlock from "./customTools/ImageBlock";
 import Code from "@calumk/editorjs-codeflask";
+import QuoteBlock from "./customTools/QuoteBlock";
 
 export const editorTools: EditorConfig["tools"] = {
   paragraph: {
@@ -29,4 +30,5 @@ export const editorTools: EditorConfig["tools"] = {
   },
   // @ts-ignore
   image: { class: ImageBlock, inlineToolbar: true },
+  quote: QuoteBlock,
 };

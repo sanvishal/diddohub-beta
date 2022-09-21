@@ -4,7 +4,7 @@ import { useQuery } from "react-query";
 import { getStepBodyById } from "./api";
 import { Editor, editorTools } from "./Editor";
 import { useStepsStore } from "./store";
-import { VideoContainer } from "./VideoContainer";
+import { YoutubeVideoContainer } from "./YoutubeVideoContainer";
 
 export const ReadOnlyView = () => {
   const selectedStep = useStepsStore((state) => state.selectedStep);
@@ -36,7 +36,7 @@ export const ReadOnlyView = () => {
       key={selectedStep.id}
     >
       <Box w={{ base: "100%", md: "50%" }}>
-        <VideoContainer url={selectedStep.content} />
+        <YoutubeVideoContainer url={selectedStep.content} />
       </Box>
       <Box
         w={{ base: "100%", md: "50%" }}

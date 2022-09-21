@@ -2,14 +2,22 @@ import { OutputData } from "@editorjs/editorjs";
 
 export enum StepType {
   YOUTUBE = "YOUTUBE",
-  ARTICLE = "ARTICLE",
+  VIMEO = "VIMEO",
 }
 
 export type YoutubeMeta = {
   duration: number;
 };
 
-export type StepContentMeta<T extends StepType> = T extends StepType.YOUTUBE ? YoutubeMeta : Record<string, any>;
+export type VimeoMeta = {
+  duration: number;
+};
+
+export type StepContentMeta<T extends StepType> = T extends StepType.YOUTUBE
+  ? YoutubeMeta
+  : T extends StepType.VIMEO
+  ? VimeoMeta
+  : Record<string, any>;
 
 export type Step<T extends StepType = any> = {
   id: string;

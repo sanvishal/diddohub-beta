@@ -19,6 +19,8 @@ const theme = extendTheme({
   semanticTokens: {
     colors: {
       accent: "#226FEE",
+      accentLight: "#A3D0FF",
+      accentLighter: "#DCEDFF",
     },
   },
 });

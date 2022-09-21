@@ -1,17 +1,16 @@
-import { API, BlockToolData, BlockToolConstructorOptions, BlockTool } from "@editorjs/editorjs";
-import { YouTubeEvent } from "react-youtube";
+import { API, BlockToolData, BlockToolConstructorOptions, BlockTool, BlockAPI } from "@editorjs/editorjs";
 import { formatSecondsTimestamp } from "../../utils";
 import { useEditorProxyStore } from "../editorProxyStore";
 // import { useBearStore } from "../editorProxyStore";
 // import { state } from "../store";
 
-interface IVideoNoteBlockData {
+interface IQuoteBlockData {
   text: string;
   timestamp: number;
 }
 
-export default class VideoNote implements BlockTool {
-  _data: BlockToolData<IVideoNoteBlockData>;
+export default class QuoteBlock implements BlockTool {
+  _data: BlockToolData<IQuoteBlockData>;
   _wrapperElement: {
     wrapper: HTMLElement;
     editable: HTMLElement;
@@ -19,35 +18,35 @@ export default class VideoNote implements BlockTool {
   };
   api: API;
   readOnly: boolean;
-  videoRef: YouTubeEvent | null;
-  videoRefStoreUnSubscribe: () => void;
   initialTimestamp: number;
+  block: BlockAPI | undefined;
 
-  constructor({ data, api, readOnly }: BlockToolConstructorOptions) {
+  constructor({ data, api, readOnly, block }: BlockToolConstructorOptions) {
     this.api = api;
-    this.videoRef = useEditorProxyStore.getState().videoRef;
-    // subscribe to store, just to make sure
-    this.videoRefStoreUnSubscribe = useEditorProxyStore.subscribe(({ videoRef }) => {
-      this.videoRef = videoRef;
-    });
-    this.initialTimestamp = this.videoRef?.target?.getCurrentTime() || 0;
+    this.block = block;
 
     this._data = this.normalizeData(data);
     this.readOnly = readOnly;
 
     this._wrapperElement = this.getTag();
-  }
-
-  destroy() {
-    this.videoRefStoreUnSubscribe();
+    this.initialTimestamp = 0;
   }
 
   static get isReadOnlySupported() {
     return true;
   }
 
-  normalizeData(data: IVideoNoteBlockData) {
-    const newData: IVideoNoteBlockData = {
+  rendered(): void {
+    if (!this.readOnly && this.block) {
+      useEditorProxyStore.getState().addQuoteBlock({
+        isOpen: true,
+        id: this.block.id,
+      });
+    }
+  }
+
+  normalizeData(data: IQuoteBlockData) {
+    const newData: IQuoteBlockData = {
       text: data?.text || "",
       timestamp: data?.timestamp || this.initialTimestamp,
     };
@@ -85,15 +84,15 @@ export default class VideoNote implements BlockTool {
   }
 
   jumpToTimeStamp() {
-    console.log(this.videoRef);
-    this.videoRef?.target.seekTo(this.currentTimeStamp);
+    // console.log(this.videoRef);
+    // this.videoRef?.target.seekTo(this.currentTimeStamp);
   }
 
   get currentTimeStamp() {
     return this._data.timestamp || 0;
   }
 
-  save(toolsContent: HTMLElement): IVideoNoteBlockData {
+  save(toolsContent: HTMLElement): IQuoteBlockData {
     return {
       text: toolsContent.getElementsByClassName("tool-content")?.[0]?.innerHTML || "",
       timestamp: this.currentTimeStamp,
@@ -107,7 +106,7 @@ export default class VideoNote implements BlockTool {
     return this._data;
   }
 
-  set data(data: IVideoNoteBlockData) {
+  set data(data: IQuoteBlockData) {
     this._data = this.normalizeData(data);
 
     if (data.timestamp !== undefined && this._wrapperElement.wrapper.parentNode) {
@@ -130,8 +129,8 @@ export default class VideoNote implements BlockTool {
 
   static get toolbox() {
     return {
-      icon: "v",
-      title: "VideoNote",
+      icon: "Q",
+      title: "Quote Transcript",
     };
   }
 }
