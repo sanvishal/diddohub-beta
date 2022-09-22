@@ -9,6 +9,7 @@ import { Editor, editorTools, useEditorProxyStore } from "./Editor";
 import { useStepsStore } from "./store";
 import { YoutubeVideoContainer } from "./YoutubeVideoContainer";
 import { AddQuoteBlockModal } from "./AddQuoteBlockModal";
+import { formatSecondsTimestamp } from "./utils";
 
 export const EditorView = () => {
   const {
@@ -102,8 +103,8 @@ export const EditorView = () => {
           </Text>
           <HStack fontSize="md" color="blackAlpha.600">
             <FiYoutube />
-            <Text as="a" href={videoRef?.target?.playerInfo?.videoUrl || "-"}>
-              {videoRef?.target?.getVideoData()?.author || "-"}
+            <Text as="a" href={videoRef?.target?.playerInfo?.videoUrl || ""} target="_blank">
+              {videoRef?.target?.getDuration() ? formatSecondsTimestamp(videoRef?.target?.getDuration() || 0) : "-"}
             </Text>
           </HStack>
         </VStack>
