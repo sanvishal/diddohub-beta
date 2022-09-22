@@ -1,4 +1,5 @@
 import { API, BlockToolData, BlockToolConstructorOptions, BlockTool, BlockAPI } from "@editorjs/editorjs";
+import { YouTubeEvent } from "react-youtube";
 import { formatSecondsTimestamp } from "../../utils";
 import { useEditorProxyStore } from "../editorProxyStore";
 // import { useBearStore } from "../editorProxyStore";
@@ -20,6 +21,7 @@ export default class QuoteBlock implements BlockTool {
   readOnly: boolean;
   initialTimestamp: number;
   block: BlockAPI | undefined;
+  videoRef: YouTubeEvent | null;
 
   constructor({ data, api, readOnly, block }: BlockToolConstructorOptions) {
     this.api = api;
@@ -30,6 +32,7 @@ export default class QuoteBlock implements BlockTool {
 
     this._wrapperElement = this.getTag();
     this.initialTimestamp = 0;
+    this.videoRef = useEditorProxyStore.getState().videoRef;
   }
 
   static get isReadOnlySupported() {
@@ -37,7 +40,8 @@ export default class QuoteBlock implements BlockTool {
   }
 
   rendered(): void {
-    if (!this.readOnly && this.block) {
+    this.videoRef = useEditorProxyStore.getState().videoRef;
+    if (!this.readOnly && this.block && this._data.text === "" && this.currentTimeStamp === 0) {
       useEditorProxyStore.getState().addQuoteBlock({
         isOpen: true,
         id: this.block.id,
@@ -55,19 +59,29 @@ export default class QuoteBlock implements BlockTool {
 
   getTag() {
     const tag = document.createElement("div");
-    tag.innerHTML = this._data.text || "";
-    tag.classList.add("tool-videonote", "tool-content");
-    tag.contentEditable = this.readOnly ? "false" : "true";
-    tag.dataset.placeholder = "Add notes @ " + String(formatSecondsTimestamp(this.currentTimeStamp)) + "...";
+    let quotedText = this._data.text.trim() || "";
+    if (quotedText.length > 0) {
+      if (quotedText[0] === "“") {
+        quotedText = quotedText.substring(1);
+      }
+
+      if (quotedText[quotedText.length - 1] === "”") {
+        quotedText = quotedText.substring(0, quotedText.length - 1);
+      }
+
+      quotedText = "“" + quotedText + "”";
+    }
+    tag.innerHTML = quotedText || "";
+    tag.classList.add("tool-quote", "tool-content");
 
     const timestampTag = document.createElement("div");
-    timestampTag.innerHTML = String(formatSecondsTimestamp(this.currentTimeStamp));
-    timestampTag.classList.add("tool-videonote", "tool-timestamp");
+    timestampTag.innerHTML = "— " + String(formatSecondsTimestamp(this.currentTimeStamp));
+    timestampTag.classList.add("tool-quote", "tool-timestamp");
 
     const wrapper = document.createElement("div");
-    wrapper.classList.add("tool-videonote", "tool-videonote-wrapper");
-    wrapper.appendChild(timestampTag);
+    wrapper.classList.add("tool-quote", "tool-quote-wrapper");
     wrapper.appendChild(tag);
+    wrapper.appendChild(timestampTag);
 
     if (!this.readOnly) {
       timestampTag.addEventListener("click", () => this.jumpToTimeStamp());
@@ -84,8 +98,9 @@ export default class QuoteBlock implements BlockTool {
   }
 
   jumpToTimeStamp() {
-    // console.log(this.videoRef);
-    // this.videoRef?.target.seekTo(this.currentTimeStamp);
+    if (this.videoRef) {
+      this.videoRef?.target.seekTo(this.currentTimeStamp);
+    }
   }
 
   get currentTimeStamp() {

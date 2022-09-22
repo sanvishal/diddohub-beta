@@ -1,7 +1,8 @@
-import { Box, Button, Center, HStack, Spinner, Stack, Text, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, Center, HStack, Spinner, Stack, Text, useDisclosure, VStack } from "@chakra-ui/react";
 import { API, OutputData } from "@editorjs/editorjs";
 import { useEffect } from "react";
-import { FiCamera, FiCheck } from "react-icons/fi";
+import { FiCamera, FiCheck, FiFileText, FiYoutube } from "react-icons/fi";
+import { GiFairyWand } from "react-icons/gi";
 import { useMutation, useQuery } from "react-query";
 import { editStepById, getStepBodyById } from "./api";
 import { Editor, editorTools, useEditorProxyStore } from "./Editor";
@@ -16,6 +17,7 @@ export const EditorView = () => {
     onClose: onAddQuoteBlockModalClose,
   } = useDisclosure();
   const selectedStep = useStepsStore((state) => state.selectedStep);
+  const videoRef = useEditorProxyStore((state) => state.videoRef);
   const [quoteBlockState, addQuoteBlock] = [
     useEditorProxyStore((state) => state.quoteBlockState),
     useEditorProxyStore((state) => state.addQuoteBlock),
@@ -43,7 +45,19 @@ export const EditorView = () => {
 
   const handleOnChange = async (api: API) => {
     const content = await api.saver.save();
-    saveStepBody(content);
+    const cleanedBlocks: OutputData["blocks"] = [];
+    content.blocks?.forEach((block) => {
+      if (block.type === "quote") {
+        if (block.data?.text?.trim()?.length !== 0) {
+          cleanedBlocks.push(block);
+        }
+      } else {
+        cleanedBlocks.push(block);
+      }
+    });
+    const cleanedContent = { ...content };
+    cleanedContent.blocks = cleanedBlocks;
+    saveStepBody(cleanedContent);
   };
 
   useEffect(() => {
@@ -69,9 +83,6 @@ export const EditorView = () => {
       pos="relative"
     >
       <Box w={{ base: "100%", md: "50%" }} pos="relative">
-        {/* <Button size="sm" mb={2} leftIcon={<FiCamera />} onClick={handleImgDialogOpen}>
-          Copy text from video
-        </Button> */}
         <YoutubeVideoContainer url={selectedStep.content} />
         <AddQuoteBlockModal
           isAddQuoteBlockModalOpen={isAddQuoteBlockModalOpen}
@@ -79,6 +90,23 @@ export const EditorView = () => {
           onAddQuoteBlockModalOpen={onAddQuoteBlockModalOpen}
           quoteBlockState={quoteBlockState}
         />
+        <Button size="sm" mt={2} leftIcon={<FiFileText />} onClick={onAddQuoteBlockModalOpen}>
+          Show Transcripts
+        </Button>
+        <Button size="sm" mt={2} ml={2} leftIcon={<GiFairyWand />}>
+          AI Summarization
+        </Button>
+        <VStack alignItems="flex-start" spacing={0} mt={3}>
+          <Text fontSize="2xl" fontWeight="bold">
+            {videoRef?.target?.videoTitle || "-"}
+          </Text>
+          <HStack fontSize="md" color="blackAlpha.600">
+            <FiYoutube />
+            <Text as="a" href={videoRef?.target?.playerInfo?.videoUrl || "-"}>
+              {videoRef?.target?.getVideoData()?.author || "-"}
+            </Text>
+          </HStack>
+        </VStack>
       </Box>
       <Box
         w={{ base: "100%", md: "calc(50% - 30px)" }}

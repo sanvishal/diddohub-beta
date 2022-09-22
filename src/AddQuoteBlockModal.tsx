@@ -12,6 +12,7 @@ import {
   Box,
   HStack,
   Text,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { FiCheck } from "react-icons/fi";
@@ -71,6 +72,17 @@ export const AddQuoteBlockModal = ({
     }
   };
 
+  const resetHighlights = () => {
+    const transcriptCont = document.getElementById("transcript-cont");
+    if (transcriptCont) {
+      // very inefficient
+      (Object.values(transcriptCont.childNodes) as HTMLElement[]).forEach((trChild) => {
+        trChild.style.background = "transparent";
+        trChild.style.fontWeight = "unset";
+      });
+    }
+  };
+
   useEffect(() => {
     if (isAddQuoteBlockModalOpen) {
       const ts = videoRef?.target?.getCurrentTime() || 0;
@@ -83,7 +95,8 @@ export const AddQuoteBlockModal = ({
   }, [isAddQuoteBlockModalOpen]);
 
   const handleClose = () => {
-    if (editorRef && quoteBlockState.id && quoteBlockState.isOpen) {
+    console.log("closed handle", quoteBlockState.id);
+    if (editorRef && quoteBlockState.id) {
       const blockIdx = editorRef.blocks.getBlockIndex(quoteBlockState.id);
       if (blockIdx) {
         editorRef.blocks.delete(blockIdx);
@@ -101,14 +114,22 @@ export const AddQuoteBlockModal = ({
     onAddQuoteBlockModalClose();
   };
 
-  const handleJumpToTs = (ts: number) => {
+  const jumpToTs = (ts: number) => {
     if (videoRef && ts) {
-      // videoRef?.target?.seekTo(ts / 1000);
+      videoRef?.target?.seekTo(ts / 1000);
+      videoRef?.target?.pauseVideo();
+      resetHighlights();
+      scrollTranscriptIntoView(ts / 1000);
     }
   };
 
   const handleOnSelect = (tr: { timestamp: number; text: string }) => {
-    if (siblingTs.length > 0) {
+    if (!quoteBlockState.id) {
+      jumpToTs(tr.timestamp);
+      return;
+    }
+
+    if (siblingTs.length > 0 && quoteBlockState.id) {
       const alreadySelected = selectedTr.find((t) => t.timestamp === tr.timestamp);
       const canSelect = siblingTs.find((t) => t.timestamp === tr.timestamp);
       if (!alreadySelected && canSelect) {
@@ -119,14 +140,31 @@ export const AddQuoteBlockModal = ({
     }
   };
 
+  const onHandleOtherWayClose = () => {
+    if (editorRef && quoteBlockState.id) {
+      const blockIdx = editorRef.blocks.getBlockIndex(quoteBlockState.id);
+      if (blockIdx) {
+        editorRef.blocks.delete(blockIdx);
+      }
+    }
+  };
+
   return (
-    <Modal isOpen={isAddQuoteBlockModalOpen} onClose={onAddQuoteBlockModalClose} size="xl">
+    <Modal
+      isOpen={isAddQuoteBlockModalOpen}
+      onClose={onAddQuoteBlockModalClose}
+      size="xl"
+      // closeOnOverlayClick={false}
+      // closeOnEsc={false}
+      onOverlayClick={onHandleOtherWayClose}
+      onCloseComplete={onHandleOtherWayClose}
+    >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Quote Transcripts</ModalHeader>
-        <ModalCloseButton />
+        <ModalHeader>{quoteBlockState.id ? "Quote Transcripts" : "Jump to Transcript"}</ModalHeader>
+        <ModalCloseButton onClick={handleClose} />
         <ModalBody overflow="auto">
-          <Box maxH="500px" ref={scrollContRef}>
+          <Box maxH="500px" ref={scrollContRef} id="transcript-cont">
             {isTranscriptsLoading && (
               <Center mt={10}>
                 <Spinner />
@@ -149,8 +187,30 @@ export const AddQuoteBlockModal = ({
                     borderColor={
                       selectedTr.find((t) => t.timestamp === tr.timestamp) ? "var(--chakra-colors-blackAlpha-600)" : "transparent"
                     }
+                    cursor={
+                      quoteBlockState.id
+                        ? siblingTs.find((t) => t.timestamp === tr.timestamp)
+                          ? "pointer"
+                          : "not-allowed"
+                        : "pointer"
+                    }
+                    pos="relative"
+                    transition="background 0.17s ease-in-out"
+                    sx={{
+                      ":after": {
+                        content: `"${
+                          selectedTr.findIndex((t) => t.timestamp === tr.timestamp) === -1
+                            ? ""
+                            : selectedTr.findIndex((t) => t.timestamp === tr.timestamp) + 1
+                        }"`,
+                        position: "absolute",
+                        opacity: "0.5",
+                        top: "-5px",
+                        left: "-12px",
+                      },
+                    }}
                   >
-                    <Text color="blue.400" fontWeight="bold" onClick={() => handleJumpToTs(tr.timestamp)} cursor="pointer">
+                    <Text color="blue.400" fontWeight="bold">
                       {formatSecondsTimestamp(tr.timestamp / 1000)}
                     </Text>
                     <Text fontWeight="inherit">{tr.text}</Text>
@@ -164,16 +224,21 @@ export const AddQuoteBlockModal = ({
           <Button variant="solid" mr={3} onClick={handleClose} rounded="full" w="100px" fontWeight="normal">
             Close
           </Button>
-          <Button
-            variant="solid"
-            colorScheme="messenger"
-            rounded="full"
-            w="140px"
-            leftIcon={<FiCheck strokeWidth={3} />}
-            onClick={handleQuote}
-          >
-            Add
-          </Button>
+          {quoteBlockState.id && (
+            <Tooltip label="select from highlighted transcripts" placement="top" shouldWrapChildren>
+              <Button
+                variant="solid"
+                colorScheme="messenger"
+                rounded="full"
+                w="140px"
+                leftIcon={<FiCheck strokeWidth={3} />}
+                onClick={handleQuote}
+                isDisabled={selectedTr.length === 0}
+              >
+                Add
+              </Button>
+            </Tooltip>
+          )}
         </ModalFooter>
       </ModalContent>
     </Modal>
