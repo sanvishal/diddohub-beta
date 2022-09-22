@@ -85,6 +85,7 @@ export const AddQuoteBlockModal = ({
 
   useEffect(() => {
     if (isAddQuoteBlockModalOpen) {
+      videoRef?.target?.pauseVideo();
       const ts = videoRef?.target?.getCurrentTime() || 0;
       setHighlightTs(ts);
       scrollTranscriptIntoView(ts);

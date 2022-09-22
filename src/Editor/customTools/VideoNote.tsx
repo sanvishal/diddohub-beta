@@ -85,7 +85,6 @@ export default class VideoNote implements BlockTool {
   }
 
   jumpToTimeStamp() {
-    console.log(this.videoRef);
     this.videoRef?.target.seekTo(this.currentTimeStamp);
   }
 
@@ -121,6 +120,12 @@ export default class VideoNote implements BlockTool {
 
     if (data.text !== undefined) {
       this._wrapperElement.editable.innerHTML = this._data.text || "";
+    }
+  }
+
+  rendered(): void {
+    if (this.videoRef) {
+      this.videoRef?.target?.pauseVideo();
     }
   }
 
